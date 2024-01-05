@@ -4,8 +4,6 @@ class Options extends Component {
     render() {
         const { options, selectedOption, onOptionChange } = this.props;
 
-        console.log();
-
         return (
             <div className='options'>
                 {options.map((option, index) => (
@@ -18,7 +16,7 @@ class Options extends Component {
                             onChange={onOptionChange}
                             className="form-check-input"
                         />
-                        <label className="form-check-label">{option.key}</label>
+                        <label className="form-check-label">{option.label||option.key}</label>
                     </div>
                 ))}
             </div>

@@ -5,17 +5,13 @@ class Score extends Component {
     render() {
         const { score } = this.props;
 
-        const winner = Object.keys(score).reduce((prev, current) => {
-            return score[prev] > score[current] ? prev : current
-        });
-
-        console.log(winner);
+        const highest = Math.max(...Object.values(score));
 
         return (
-            <div>
-                <h2>Result</h2>
+            <div className="score">
+                <h4>Score</h4>
                 {Object.keys(score).map((key, index) => (
-                    <div key={index} style={{color: winner === key ? 'green' : 'white'}} >Type {key}: {score[key]}</div>
+                    <div key={index} style={{color: highest !== 0 && highest === score[key] ? 'green' : 'white'}} >Type {key}: {score[key]}</div>
                 ))}
             </div>
         );

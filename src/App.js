@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Question from "./Components/Question";
 import qBank from "./Components/QuestionBank";
 import Score from "./Components/Score";
+import Result from "./Components/Result";
 import "./App.css";
 
 class App extends Component {
@@ -12,6 +13,7 @@ class App extends Component {
             questionBank: qBank,
             currentQuestion: 0,
             selectedOption: "",
+            level2Options: [],
             score: {
                 1: 0,
                 2: 0,
@@ -37,24 +39,52 @@ class App extends Component {
     };
 
     checkAnswer = () => {
-        const { questionBank, currentQuestion, selectedOption, score } = this.state;
-        console.log(score);
+        const { questionBank, currentQuestion, selectedOption } = this.state;
 
         if (selectedOption !== '') {
-            this.setState((prevState) => {
-                if (!questionBank[currentQuestion].done) {
-                    questionBank[currentQuestion].options.find((o) => +o.key === +selectedOption).typeScore.forEach((value, index) => {
-                        prevState.score[index+1] = prevState.score[index+1] + value;
+            if (selectedOption.indexOf('_') !== -1) {
+                this.checkLevel2Answer();
+
+            } else {
+                const optionObj = questionBank[currentQuestion].options.find((o) => ""+o.key === ""+selectedOption);
+
+                if (optionObj.level2Options) {
+                    this.setState((prevState) => ({
+                        selectedOption: "",
+                        level2Options: optionObj.level2Options
+                    }));
+                } else {
+                    this.setState((prevState) => {
+                        if (!questionBank[currentQuestion].done) {
+                            optionObj.typeScore.forEach((value, index) => {
+                                prevState.score[index+1] = prevState.score[index+1] + value;
+                            });
+                            questionBank[currentQuestion].done = true;
+                        }
+                        return {score: prevState.score};
                     });
-                    questionBank[currentQuestion].done = true;
+
+                    this.handleNextQuestion();
                 }
-                return {score: prevState.score};
-            });
-
-            this.handleNextQuestion();
+            }
         }
-
     };
+
+    checkLevel2Answer = () => {
+        const { questionBank, currentQuestion, selectedOption } = this.state;
+        this.setState((prevState) => {
+            if (!questionBank[currentQuestion].done) {
+                const optionObj = questionBank[currentQuestion].options.find((o) => ""+o.key === ""+selectedOption.split("_")[0]);
+                optionObj.level2Options.find((o) => ""+o.key === ""+selectedOption).typeScore.forEach((value, index) => {
+                    prevState.score[index+1] = prevState.score[index+1] + value;
+                });
+                questionBank[currentQuestion].done = true;
+            }
+            return {score: prevState.score};
+        });
+
+        this.handleNextQuestion();
+    }
 
     handleNextQuestion = () => {
         const { questionBank, currentQuestion } = this.state;
@@ -62,6 +92,7 @@ class App extends Component {
             this.setState((prevState) => ({
                 currentQuestion: prevState.currentQuestion + 1,
                 selectedOption: "",
+                level2Options: []
             }));
         } else {
             this.setState({
@@ -71,24 +102,24 @@ class App extends Component {
     };
 
     render() {
-        const { questionBank, currentQuestion, selectedOption, score, quizEnd } =
+        const { questionBank, currentQuestion, selectedOption, level2Options, score, quizEnd } =
             this.state;
         return (
             <div className="App d-flex flex-column align-items-left justify-content-center">
                 <h1 className="app-title">Enneagram Personality Test</h1>
-                {!quizEnd ? (
-                    <Question
-                        question={questionBank[currentQuestion]}
-                        selectedOption={selectedOption}
-                        onOptionChange={this.handleOptionChange}
-                        onSubmit={this.handleFormSubmit}
-                    />
-                ) : (
-                    <Score
-                        score={score}
-                        className="score"
-                    />
-                )}
+                {!quizEnd
+                    ?(<div className="flex-container">
+                        <Question
+                            question={questionBank[currentQuestion]}
+                            selectedOption={selectedOption}
+                            level2Options={level2Options}
+                            onOptionChange={this.handleOptionChange}
+                            onSubmit={this.handleFormSubmit}
+                        />
+                        <Score score={score}/>
+                    </div>)
+                    :(<Result score={score}/>)
+                }
             </div>
         );
     }

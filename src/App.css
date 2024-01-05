@@ -2,12 +2,20 @@ body {
   background-color: #292b2e;
   color: #ffffff;
 }
-
 #root {
   margin-left: 3em;
 }
-
 .app-title {
   color: #ffffff;
   margin-top: 2rem;
+}
+.questions {
+  width: 50%;
+}
+.flex-container {
+  display: flex;
+}
+.result .winner-type {
+  color: green;
+  font-size: 2em;
 }

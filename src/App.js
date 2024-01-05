@@ -26,6 +26,7 @@ class App extends Component {
                 9: 0
             },
             quizEnd: false,
+            result: {}
         };
     }
 
@@ -40,13 +41,14 @@ class App extends Component {
 
     checkAnswer = () => {
         const { questionBank, currentQuestion, selectedOption } = this.state;
+        const questionObj = questionBank[currentQuestion];
 
         if (selectedOption !== '') {
             if (selectedOption.indexOf('_') !== -1) {
                 this.checkLevel2Answer();
 
             } else {
-                const optionObj = questionBank[currentQuestion].options.find((o) => ""+o.key === ""+selectedOption);
+                const optionObj = questionObj.options.find((o) => ""+o.key === ""+selectedOption);
 
                 if (optionObj.level2Options) {
                     this.setState((prevState) => ({
@@ -54,6 +56,11 @@ class App extends Component {
                         level2Options: optionObj.level2Options
                     }));
                 } else {
+                    this.setState((prevState) => {
+                        prevState.result["Q"+questionObj.id] = selectedOption;
+                        return {result: prevState.result};
+                    });
+
                     this.setState((prevState) => {
                         if (!questionBank[currentQuestion].done) {
                             optionObj.typeScore.forEach((value, index) => {
@@ -72,6 +79,13 @@ class App extends Component {
 
     checkLevel2Answer = () => {
         const { questionBank, currentQuestion, selectedOption } = this.state;
+        const questionObj = questionBank[currentQuestion];
+
+        this.setState((prevState) => {
+            prevState.result["Q"+questionObj.id] = selectedOption;
+            return {result: prevState.result};
+        });
+
         this.setState((prevState) => {
             if (!questionBank[currentQuestion].done) {
                 const optionObj = questionBank[currentQuestion].options.find((o) => ""+o.key === ""+selectedOption.split("_")[0]);
@@ -95,6 +109,13 @@ class App extends Component {
                 level2Options: []
             }));
         } else {
+
+            // All done send the result to Firebase
+            console.log({
+                qa: this.state.result,
+                score: this.state.score
+            });
+
             this.setState({
                 quizEnd: true,
             });
